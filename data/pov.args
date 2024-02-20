@@ -1,0 +1,1 @@
+povray  +L/home/bsloan/povray-3.50b/include -Q10 Antialias=on -AM1 -R4 -J2.4   Output_File_Type=P -W1024 -H640 -Iint_5.pov
