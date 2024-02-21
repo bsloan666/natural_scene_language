@@ -6,7 +6,7 @@ import os
 import tkinter as tk
 from PIL import Image, ImageTk
 
-import nltk
+# import nltk
 import re
 
 
@@ -67,16 +67,16 @@ def parse_prompt(in_str):
                 VP: {<MD>?<VB.*><NP|PP>}     # verb phrase
                 CLAUSE: {<NP><VP>}           # full clause
             """
-    for sentence in re.split(r"\.", in_str):
-        if len(sentence) > 2:
-            tokens = nltk.word_tokenize(sentence)
-            tagged = nltk.pos_tag(tokens)
-            entities = nltk.chunk.ne_chunk(tagged)
-            cp = nltk.RegexpParser(grammar)
-            temp = cp.parse(entities)
-            result.append(temp)
-    for tree in result:
-        tree.pretty_print()
+#    for sentence in re.split(r"\.", in_str):
+#        if len(sentence) > 2:
+#            tokens = nltk.word_tokenize(sentence)
+#            tagged = nltk.pos_tag(tokens)
+#            entities = nltk.chunk.ne_chunk(tagged)
+#            cp = nltk.RegexpParser(grammar)
+#            temp = cp.parse(entities)
+#            result.append(temp)
+#    for tree in result:
+#        tree.pretty_print()
     return result
 
 
@@ -161,7 +161,7 @@ def render():
 
     cmd = "povray "
     cmd += "+L/home/bsloan/povray-3.50b/include "
-    cmd += "+D +SP16 -Q9 Antialias=on "
+    cmd += "+D +SP16 -Q10 Antialias=on "
     cmd += "+A0.9 +R16 +J2.2 +UV +UL "
     cmd += "Output_File_Type=P "
     cmd += "-W1280 -H720 "
@@ -185,7 +185,7 @@ def render():
     cmd += "-Itmp.pov "
     os.system(cmd)
 
-    image = ImageTk.PhotoImage(Image.open("tmp1001.ppm"))
+    image = ImageTk.PhotoImage(Image.open(img_fname))
     canvas.configure(image=image)
     canvas.image = image
 
