@@ -6,8 +6,33 @@ import os
 import tkinter as tk
 from PIL import Image, ImageTk
 
-# import nltk
+import nltk
 import re
+
+
+def default_camera():
+    return """
+    camera {
+        perspective
+        location <0.0, 1.5, -12.0>
+        direction <0, 0, 1>
+        up y
+        right x*1.77
+        look_at <0.0, 0.5, 0.00>
+    }
+    """
+
+
+def default_light():
+    return """
+    light_source {
+        <10.00, 15.00, -20.00>
+        color White
+        area_light <5, 0, 0>, <0, 0, 5>, 5, 5
+        adaptive 1
+        jitter
+    }
+    """
 
 
 def header():
@@ -22,23 +47,6 @@ def header():
 
     #declare rseed = seed(123);
 
-    camera {
-        perspective
-        location <0.0, 1.5, -12.0>
-        direction <0, 0, 1>
-        up y
-        right x*1.77
-        look_at <0.0, 0.5, 0.00>
-    }
-
-    light_source {
-        <10.00, 15.00, -20.00>
-        color White
-        area_light <5, 0, 0>, <0, 0, 5>, 5, 5
-        adaptive 1
-        jitter
-    }
-
     #default {
         pigment { White }
         finish {
@@ -49,6 +57,27 @@ def header():
         }
     }
     """
+
+
+def parse_prompt(in_str):
+    result = []
+    grammar = r"""
+                NP: {<DT|PP\$>?<JJ>*<NN.*>+} # noun phrase
+                PP: {<IN><NP>}               # prepositional phrase
+                VP: {<MD>?<VB.*><NP|PP>}     # verb phrase
+                CLAUSE: {<NP><VP>}           # full clause
+            """
+    for sentence in re.split(r"\.", in_str):
+        if len(sentence) > 2:
+            tokens = nltk.word_tokenize(sentence)
+            tagged = nltk.pos_tag(tokens)
+            entities = nltk.chunk.ne_chunk(tagged)
+            cp = nltk.RegexpParser(grammar)
+            temp = cp.parse(entities)
+            result.append(temp)
+    for tree in result:
+        tree.pretty_print()
+    return result
 
 
 def initialize_dictionary():
@@ -81,6 +110,8 @@ def text_to_pov(text):
     modifiers = ""
     subject = ""
 
+    no_camera = True
+    no_light = True
     line = re.split(" ", text.rstrip())
 
     print("LINE:", line)
@@ -96,17 +127,34 @@ def text_to_pov(text):
             modifiers += " "
 
         if part_of_speech(record) == "N":
+            if token == "camera":
+                no_camera = False
+            if token == "light":
+                no_light = False
             subject += translate_record(record)
             subject += " "
             subject += modifiers
             subject += " }\n"
             modifiers = ""
 
-    print("SUBJECT:", subject)
+    if no_camera:
+        subject += default_camera()
+    if no_light:
+        subject += default_light()
+
     return subject
 
 
+def change_frame(frame):
+    image = ImageTk.PhotoImage(Image.open("tmp{0}.ppm".format(frame)))
+    canvas.configure(image=image)
+    canvas.image = image
+
+
 def render():
+    parse_prompt(editor.get("1.0", tk.END))
+
+    # DEBUG
     with open("tmp.pov", "w") as handle:
         handle.write(header())
         handle.write(text_to_pov(editor.get("1.0", tk.END)))
@@ -116,10 +164,27 @@ def render():
     cmd += "+D +SP16 -Q9 Antialias=on "
     cmd += "+A0.9 +R16 +J2.2 +UV +UL "
     cmd += "Output_File_Type=P "
-    cmd += "-W1280 -H720 -Itmp.pov"
+    cmd += "-Otmp1001.ppm "
+    cmd += "-W1280 -H720 "
+
+    frames = 1
+    temp_frames = duration.get()
+    if temp_frames[-1] == "s":
+        frames = int(float(temp_frames[0:-1]) * 24)
+    elif temp_frames[-1] == "f":
+        frames = int(float(temp_frames[0:-1]))
+    else:
+        frames = int(float(temp_frames))
+
+    if frames > 1:
+        last_frame = 1001 + frames
+        slider.configure(to=last_frame)
+        cmd += "-KFI1001 -KFF{0} -KI0.0 -KF1.0 ".format(last_frame)
+
+    cmd += "-Itmp.pov "
     os.system(cmd)
 
-    image = ImageTk.PhotoImage(Image.open("tmp.ppm"))
+    image = ImageTk.PhotoImage(Image.open("tmp1001.ppm"))
     canvas.configure(image=image)
     canvas.image = image
 
@@ -132,8 +197,8 @@ posx = 100
 posy = 100
 
 editor = tk.Text(height=10)
-if os.path.exists("tmp.ppm"):
-    pil_image = Image.open("tmp.ppm")
+if os.path.exists("tmp1001.ppm"):
+    pil_image = Image.open("tmp1001.ppm")
     image = ImageTk.PhotoImage(pil_image)
 
     canvas = tk.Label(image=image)
@@ -141,11 +206,29 @@ if os.path.exists("tmp.ppm"):
 else:
     canvas = tk.Label()
 
+frame = tk.Frame()
+duration = tk.Entry(frame, width=5)
+label = tk.Label(frame, text="Duration")
+
+slider = tk.Scale(
+    frame,
+    orient=tk.HORIZONTAL,
+    length=500,
+    from_=1001,
+    to=1002,
+    command=change_frame)
+
 button = tk.Button(text="Go!")
 button.config(command=render)
+duration.insert(0, "1")
+
+label.pack(side=tk.LEFT)
+duration.pack(side=tk.LEFT)
+slider.pack(side=tk.LEFT)
 
 canvas.pack()
 editor.pack()
+frame.pack()
 button.pack()
 
 app.title("Text to Image")

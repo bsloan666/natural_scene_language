@@ -11,8 +11,5 @@ grammar = r"""
             CLAUSE: {<NP><VP>}           # full clause
         """
 cp = nltk.RegexpParser(grammar)
-
 result = cp.parse(entities)
-
 result.pretty_print()
-
