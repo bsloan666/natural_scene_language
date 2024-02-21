@@ -164,10 +164,10 @@ def render():
     cmd += "+D +SP16 -Q9 Antialias=on "
     cmd += "+A0.9 +R16 +J2.2 +UV +UL "
     cmd += "Output_File_Type=P "
-    cmd += "-Otmp1001.ppm "
     cmd += "-W1280 -H720 "
 
     frames = 1
+    img_fname = "tmp.ppm"
     temp_frames = duration.get()
     if temp_frames[-1] == "s":
         frames = int(float(temp_frames[0:-1]) * 24)
@@ -180,6 +180,7 @@ def render():
         last_frame = 1001 + frames
         slider.configure(to=last_frame)
         cmd += "-KFI1001 -KFF{0} -KI0.0 -KF1.0 ".format(last_frame)
+        img_fname = "tmp1001.ppm"
 
     cmd += "-Itmp.pov "
     os.system(cmd)

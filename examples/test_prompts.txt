@@ -1,1 +1,2 @@
+zooming camera turning box left box right box ground fog
 The camera moves forward. A wooden box spins over a chrome blob.
