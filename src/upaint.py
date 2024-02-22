@@ -1,5 +1,5 @@
 import os
-# import sys
+import sys
 # import json
 # import subprocess
 
@@ -37,8 +37,8 @@ def default_light():
 
 def header():
     return """
-    // Persistence Of Vision raytracer version 3.1 sample file.
-
+    #version 3.7;
+    
     global_settings { assumed_gamma 2.2 }
 
     #include "colors.inc"
@@ -52,7 +52,7 @@ def header():
         finish {
             ambient .2
             diffuse .6
-            specular .75
+            specular .25
             roughness .1
         }
     }
@@ -79,6 +79,11 @@ def parse_prompt(in_str):
 #        tree.pretty_print()
     return result
 
+def on_closing():
+    with open("tmp.txt", "w") as handle:
+        handle.write(editor.get("1.0", tk.END))
+        handle.write("\n")
+    sys.exit(0)    
 
 def initialize_dictionary():
     """
@@ -114,10 +119,8 @@ def text_to_pov(text):
     no_light = True
     line = re.split(" ", text.rstrip())
 
-    print("LINE:", line)
 
     lookup = initialize_dictionary()
-    print("LOOKUP:", lookup)
 
     for token in line:
         record = lookup.get(token, {"part": "X", "code": ""})
@@ -160,9 +163,8 @@ def render():
         handle.write(text_to_pov(editor.get("1.0", tk.END)))
 
     cmd = "povray "
-    cmd += "+L/home/bsloan/povray-3.50b/include "
-    cmd += "+D +SP16 -Q10 Antialias=on "
-    cmd += "+A0.9 +R16 +J2.2 +UV +UL "
+    cmd += "+Q10 "
+    cmd += "+A0.5 +AM1 +R16 +J2.2 +UV +UL "
     cmd += "Output_File_Type=P "
     cmd += "-W1280 -H720 "
 
@@ -183,6 +185,8 @@ def render():
         img_fname = "tmp1001.ppm"
 
     cmd += "-Itmp.pov "
+
+    print(cmd)
     os.system(cmd)
 
     image = ImageTk.PhotoImage(Image.open(img_fname))
@@ -191,6 +195,7 @@ def render():
 
 
 app = tk.Tk()
+app.protocol("WM_DELETE_WINDOW", on_closing)
 
 sizex = 1280
 sizey = 720
@@ -233,4 +238,11 @@ frame.pack()
 button.pack()
 
 app.title("Text to Image")
+app.update_idletasks()
+if os.path.exists("tmp.txt"):
+    with open("tmp.txt", "r") as handle:
+        editor.insert(tk.END, handle.read())
+
 app.mainloop()
+
+

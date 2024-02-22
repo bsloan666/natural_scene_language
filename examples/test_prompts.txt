@@ -1,2 +1,3 @@
+turning tall far low huge blob left tall case right tall case zooming camera ground sky fog
 zooming camera turning box left box right box ground fog
 The camera moves forward. A wooden box spins over a chrome blob.
