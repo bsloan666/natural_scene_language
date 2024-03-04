@@ -29,7 +29,7 @@ N camera camera {  perspective location <0.0, 1.5, -12.0> direction <0, 0, 1> up
 N mountain height_field { function 100 100 { f_noise_generator(x*200, y*200, z*200, 3) } smooth scale < 200, 8, 200> translate < -100, -4, -100 >  
 
 A near translate < 0, 0, -4>
-A close translate < 0, 0, -5>
+A close translate < 0, 0, -2>
 A high translate < 0, 3, 0>
 A low translate < 0, -3, 0>
 A right translate < 3, 0, 0>
@@ -104,6 +104,7 @@ A iron texture { Rusty_Iron }
 A rusty texture { Rusty_Iron }
 A turned rotate <0, 90, 0>
 A flipped rotate <180, 0 , 0>
+A tipped rotate <90, 0 , 0>
 A upside-down rotate <180, 0 , 0>
 A reversed rotate <0, 180, 0>
 A backwards rotate <0, 180, 0>

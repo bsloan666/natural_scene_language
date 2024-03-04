@@ -6,7 +6,7 @@ import sys
 import tkinter as tk
 from PIL import Image, ImageTk
 
-# import nltk
+import nltk
 import re
 
 
@@ -67,23 +67,47 @@ def parse_prompt(in_str):
                 VP: {<MD>?<VB.*><NP|PP>}     # verb phrase
                 CLAUSE: {<NP><VP>}           # full clause
             """
-#    for sentence in re.split(r"\.", in_str):
-#        if len(sentence) > 2:
-#            tokens = nltk.word_tokenize(sentence)
-#            tagged = nltk.pos_tag(tokens)
-#            entities = nltk.chunk.ne_chunk(tagged)
-#            cp = nltk.RegexpParser(grammar)
-#            temp = cp.parse(entities)
-#            result.append(temp)
-#    for tree in result:
-#        tree.pretty_print()
+    for sentence in re.split(r"\.", in_str):
+        if len(sentence) > 2:
+            tokens = nltk.word_tokenize(sentence)
+            tagged = nltk.pos_tag(tokens)
+            entities = nltk.chunk.ne_chunk(tagged)
+            cp = nltk.RegexpParser(grammar)
+            temp = cp.parse(entities)
+            result.append(temp)
+    for tree in result:
+        tree.pretty_print()
     return result
 
+
+def extract(part, tree):
+    """
+    given a phrase type or part-of-speech type and the parsed tree 
+    of a sentence, return the associated fragment of text
+    """
+    
+    def recurse(part, subtree):
+        for child in subtree:
+            if isinstance(child, nltk.tree.tree.Tree):
+                print(child.label())
+                if child.label() == part:
+                    return " ".join([x[0] for x in child.leaves()])
+                else:
+                    return recurse(part, child)
+            else:
+                print(child[0])
+                if child[1] == part:
+                    return child[0]
+
+    return recurse(part, tree)
+
+
 def on_closing():
-    with open("tmp.txt", "w") as handle:
+    with open("tmp/tmp.txt", "w") as handle:
         handle.write(editor.get("1.0", tk.END))
         handle.write("\n")
     sys.exit(0)    
+
 
 def initialize_dictionary():
     """
@@ -119,7 +143,6 @@ def text_to_pov(text):
     no_light = True
     line = re.split(" ", text.rstrip())
 
-
     lookup = initialize_dictionary()
 
     for token in line:
@@ -149,18 +172,24 @@ def text_to_pov(text):
 
 
 def change_frame(frame):
-    image = ImageTk.PhotoImage(Image.open("tmp{0}.ppm".format(frame)))
+    image = ImageTk.PhotoImage(Image.open("tmp/tmp{0}.ppm".format(frame)))
     canvas.configure(image=image)
     canvas.image = image
 
 
-def render():
-    parse_prompt(editor.get("1.0", tk.END))
+def render(_=None):
+    parsed = parse_prompt(editor.get("1.0", tk.END))
 
+    for tree in parsed:
+        print("NOUN PHRASE:", extract("NP", tree))
+        print("VERB PHRASE:", extract("VP", tree))
+        print("PREPOSITIONAL PHRASE:", extract("PP", tree))
     # DEBUG
-    with open("tmp.pov", "w") as handle:
+    return
+
+    with open("tmp/tmp.pov", "w") as handle:
         handle.write(header())
-        handle.write(text_to_pov(editor.get("1.0", tk.END)))
+        handle.write(text_to_pov(parsed))
 
     cmd = "povray "
     cmd += "+Q10 "
@@ -169,7 +198,7 @@ def render():
     cmd += "-W1280 -H720 "
 
     frames = 1
-    img_fname = "tmp.ppm"
+    img_fname = "tmp/tmp.ppm"
     temp_frames = duration.get()
     if temp_frames[-1] == "s":
         frames = int(float(temp_frames[0:-1]) * 24)
@@ -182,9 +211,9 @@ def render():
         last_frame = 1001 + frames
         slider.configure(to=last_frame)
         cmd += "-KFI1001 -KFF{0} -KI0.0 -KF1.0 ".format(last_frame)
-        img_fname = "tmp1001.ppm"
+        img_fname = "tmp/tmp1001.ppm"
 
-    cmd += "-Itmp.pov "
+    cmd += "-Itmp/tmp.pov "
 
     print(cmd)
     os.system(cmd)
@@ -192,7 +221,7 @@ def render():
     image = ImageTk.PhotoImage(Image.open(img_fname))
     canvas.configure(image=image)
     canvas.image = image
-
+    return 'break'
 
 app = tk.Tk()
 app.protocol("WM_DELETE_WINDOW", on_closing)
@@ -203,8 +232,8 @@ posx = 100
 posy = 100
 
 editor = tk.Text(height=10)
-if os.path.exists("tmp1001.ppm"):
-    pil_image = Image.open("tmp1001.ppm")
+if os.path.exists("tmp/tmp1001.ppm"):
+    pil_image = Image.open("tmp/tmp1001.ppm")
     image = ImageTk.PhotoImage(pil_image)
 
     canvas = tk.Label(image=image)
@@ -238,11 +267,17 @@ frame.pack()
 button.pack()
 
 app.title("Text to Image")
+
 app.update_idletasks()
-if os.path.exists("tmp.txt"):
-    with open("tmp.txt", "r") as handle:
+if os.path.exists("tmp/tmp.txt"):
+    with open("tmp/tmp.txt", "r") as handle:
         editor.insert(tk.END, handle.read())
 
+if not os.path.exists("tmp"):
+    os.makedirs("tmp")
+
+editor.bind("<Return>", render)
 app.mainloop()
+
 
 
