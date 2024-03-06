@@ -14,6 +14,7 @@ N donut torus { 0.7, 0.3 translate < 0, -0.7, 0 >   bounded_by { box { <-1.0, -1
 N bagel torus { 0.7, 0.3 translate < 0, -0.7, 0 >   bounded_by { box { <-1.0, -1.0, -1.0>, <1.0, -0.4, 1.0> } }
 N ring torus { 0.9, 0.1 translate < 0, -0.9, 0 >   bounded_by { box { <-1.0, -1.0, -1.0>, <1.0, -0.8 1.0> } }
 N blob blob { threshold 0.75 sphere { < (rand(rseed) - 0.5) * 2, (rand(rseed) - 0.5)*2, (rand(rseed) - 0.5)*2>, rand(rseed)*2, 1 } sphere { < (rand(rseed) - 0.5) * 2, (rand(rseed) - 0.5)*2, (rand(rseed) - 0.5)*2>, rand(rseed)*2, 1 } sphere { < (rand(rseed) - 0.5) * 2, (rand(rseed) - 0.5)*2, (rand(rseed) - 0.5)*2>, rand(rseed)*2, 1 } sphere { < (rand(rseed) - 0.5) * 2, (rand(rseed) - 0.5)*2, (rand(rseed) - 0.5)*2>, rand(rseed)*2, 1 } sphere { < (rand(rseed) - 0.5) * 2, (rand(rseed) - 0.5)*2, (rand(rseed) - 0.5)*2>, rand(rseed)*2, 1 } sphere { < (rand(rseed) - 0.5) * 2, (rand(rseed) - 0.5)*2, (rand(rseed) - 0.5)*2>, rand(rseed)*2, 1 }
+N fuzzball isosurface {function { f_sphere(x, y, z, 0.5) - f_noise3d(x * 5, y * 5, z * 5) * 0.5} threshold 0.01
 N cross union { box { < -0.5, 0.6, -0.2>, < 0.5, 0.8, 0.2> } box { < -0.1, -1.0, -0.2>, < 0.1, 1.0, 0.2> }
 N crucifix union { box { < -0.5, 0.6, -0.2>, < 0.5, 0.8, 0.2> } box { < -0.1, -1.0, -0.2>, < 0.1, 1.0, 0.2> }
 N bowl difference { difference {  sphere { <0, 0, 0>, 1 } sphere { < 0, 0.4, 0>, 1.2 } } box { <-2, -0.46, -2>, <2, 2, 2> }
@@ -23,10 +24,11 @@ N case difference { box { <-1.0, -1.0, -1.0>, <1.0, 1.0, 1.0> } box { <-1.0, -1.
 N ground  plane { <0, 1, 0>, -0.999    
 N floor  plane { <0, 1, 0>, -0.999    
 N sky sky_sphere {  pigment { gradient y color_map { [ 0.5  color CornflowerBlue ]  [ 1.0  color MidnightBlue ] }  scale 2  translate -1 }
-N fog fog { distance 15 color rgb<0.5, 0.5, 0.5>    
-N light light_source {  <0.00, 0.00, 0.00> 
+N fog fog { distance 25 color rgb<0.5, 0.5, 0.5>    
+N light light_source {  <0.00, 5.00, 10.00> color White area_light <5, 0, 0>, <0, 0, 5>, 5, 5 adaptive 1 jitter looks_like { sphere { <0,5.0,10.0>,1.1 texture { pigment { color rgb <1, 1, 1> } finish { ambient 1.0 }}}}
 N camera camera {  perspective location <0.0, 1.5, -12.0> direction <0, 0, 1> up y right x*1.77 look_at <0.0, 0.5, 0.00>
-N mountain height_field { function 100 100 { f_noise_generator(x*200, y*200, z*200, 3) } smooth scale < 200, 8, 200> translate < -100, -4, -100 >  
+N mountain height_field { function 100 100 { f_noise_generator(x*30, y*30, z*30, 3) } smooth scale < 100, 1, 100> translate < -50, -1.4, -50 >  
+N terrain height_field { function 100 100 { f_noise_generator(x*30, y*30, z*30, 3) } smooth scale < 100, 1, 100> translate < -50, -1.4, -50 >  
 
 A near translate < 0, 0, -4>
 A close translate < 0, 0, -2>
@@ -102,13 +104,13 @@ A granite texture { Pink_Granite }
 A chrome texture { Polished_Chrome }
 A iron texture { Rusty_Iron }
 A rusty texture { Rusty_Iron }
-A turned rotate <0, 90, 0>
+A turned rotate <0, 45, 0>
 A flipped rotate <180, 0 , 0>
 A tipped rotate <90, 0 , 0>
 A upside-down rotate <180, 0 , 0>
 A reversed rotate <0, 180, 0>
 A backwards rotate <0, 180, 0>
-A twisted rotate <0, 45, 0>
+A twisted rotate <0, -22.5, 0>
 A cloudy pigment { Clouds }
 A sunny  pigment{gradient <0,1,0>  color_map{ [0.0 color White] [0.8 color rgb<0.1,0.25,0.75>] [1.0 color rgb<0.1,0.25,0.75>] }} 
 A night pigment { Apocalypse } 

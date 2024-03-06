@@ -68,15 +68,15 @@ def parse_prompt(in_str):
                 CLAUSE: {<NP><VP>}           # full clause
             """
     for sentence in re.split(r"\.", in_str):
-        if len(sentence) > 2:
+        sentence = sentence.rstrip()
+        if len(sentence) > 3:
+            print( "[" + sentence + "]") 
             tokens = nltk.word_tokenize(sentence)
             tagged = nltk.pos_tag(tokens)
             entities = nltk.chunk.ne_chunk(tagged)
             cp = nltk.RegexpParser(grammar)
             temp = cp.parse(entities)
             result.append(temp)
-    for tree in result:
-        tree.pretty_print()
     return result
 
 
@@ -85,21 +85,25 @@ def extract(part, tree):
     given a phrase type or part-of-speech type and the parsed tree 
     of a sentence, return the associated fragment of text
     """
-    
-    def recurse(part, subtree):
-        for child in subtree:
-            if isinstance(child, nltk.tree.tree.Tree):
-                print(child.label())
-                if child.label() == part:
-                    return " ".join([x[0] for x in child.leaves()])
-                else:
-                    return recurse(part, child)
-            else:
-                print(child[0])
-                if child[1] == part:
-                    return child[0]
 
-    return recurse(part, tree)
+    result = []
+    if part == "S":
+        return tree.leaves()
+    for child in tree:
+        if isinstance(child, nltk.tree.tree.Tree):
+            # print(child.label())
+            if child.label() == part:
+                result = child.leaves()
+                result.append("|")
+            else:    
+                result.extend(extract(part, child))    
+        else:
+            # print(child[0])
+            if child[1] == part:
+                result.append(child)
+                result.append("|")
+
+    return result 
 
 
 def on_closing():
@@ -180,16 +184,21 @@ def change_frame(frame):
 def render(_=None):
     parsed = parse_prompt(editor.get("1.0", tk.END))
 
+    sentence = "" 
     for tree in parsed:
-        print("NOUN PHRASE:", extract("NP", tree))
-        print("VERB PHRASE:", extract("VP", tree))
-        print("PREPOSITIONAL PHRASE:", extract("PP", tree))
+        tree.pretty_print()
+        sentence += " ".join([x[0] for x in extract("S", tree)])
+        print("CLAUSE:", " ".join([x[0] for x in extract("CLAUSE", tree)]))
+        print("NOUN PHRASES:", " ".join([x[0] for x in extract("NP", tree)]))
+        print("VERB PHRASE:", " ".join([x[0] for x in extract("VP", tree)]))
+        print("PREPOSITIONAL PHRASE:", " ".join([x[0] for x in extract("PP", tree)]))
+        print("ADJECTIVES:", " ".join([x[0] for x in extract("JJ", tree)]))
     # DEBUG
-    return
 
+    print("SENTENCE:", sentence)
     with open("tmp/tmp.pov", "w") as handle:
         handle.write(header())
-        handle.write(text_to_pov(parsed))
+        handle.write(text_to_pov(sentence))
 
     cmd = "povray "
     cmd += "+Q10 "
@@ -234,6 +243,12 @@ posy = 100
 editor = tk.Text(height=10)
 if os.path.exists("tmp/tmp1001.ppm"):
     pil_image = Image.open("tmp/tmp1001.ppm")
+    image = ImageTk.PhotoImage(pil_image)
+
+    canvas = tk.Label(image=image)
+    canvas.configure(image=image)
+elif os.path.exists("tmp/tmp.ppm"):
+    pil_image = Image.open("tmp/tmp.ppm")
     image = ImageTk.PhotoImage(pil_image)
 
     canvas = tk.Label(image=image)
