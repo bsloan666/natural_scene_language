@@ -240,6 +240,9 @@ sizey = 720
 posx = 100
 posy = 100
 
+if not os.path.exists("tmp"):
+    os.makedirs("tmp")
+
 editor = tk.Text(height=10)
 if os.path.exists("tmp/tmp1001.ppm"):
     pil_image = Image.open("tmp/tmp1001.ppm")
@@ -288,8 +291,6 @@ if os.path.exists("tmp/tmp.txt"):
     with open("tmp/tmp.txt", "r") as handle:
         editor.insert(tk.END, handle.read())
 
-if not os.path.exists("tmp"):
-    os.makedirs("tmp")
 
 editor.bind("<Return>", render)
 app.mainloop()

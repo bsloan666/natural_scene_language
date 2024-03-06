@@ -25,7 +25,7 @@ N ground  plane { <0, 1, 0>, -0.999
 N floor  plane { <0, 1, 0>, -0.999    
 N sky sky_sphere {  pigment { gradient y color_map { [ 0.5  color CornflowerBlue ]  [ 1.0  color MidnightBlue ] }  scale 2  translate -1 }
 N fog fog { distance 25 color rgb<0.5, 0.5, 0.5>    
-N light light_source {  <0.00, 5.00, 10.00> color White area_light <5, 0, 0>, <0, 0, 5>, 5, 5 adaptive 1 jitter looks_like { sphere { <0,5.0,10.0>,1.1 texture { pigment { color rgb <1, 1, 1> } finish { ambient 1.0 }}}}
+N light union { sphere {< 0, 0, 0>, 1.5 pigment {color White filter 1} hollow interior { media { emission color rgb < 1, 1, 1> absorption color rgb < 0, 0, 0> density {spherical  color_map {  [0 color Black] [0.5 color White] [1 color White]    }  }  }}} sphere {< 0, 0, 0>, 0.5 pigment {color White filter 1} finish {specular 1} } light_source { < 0, 0, 0 > color White fade_distance 25 fade_power 2  area_light <5, 0, 0>, <0, 0, 5>, 5, 5 adaptive 1 jitter } translate < 0, 5, 10>
 N camera camera {  perspective location <0.0, 1.5, -12.0> direction <0, 0, 1> up y right x*1.77 look_at <0.0, 0.5, 0.00>
 N mountain height_field { function 100 100 { f_noise_generator(x*30, y*30, z*30, 3) } smooth scale < 100, 1, 100> translate < -50, -1.4, -50 >  
 N terrain height_field { function 100 100 { f_noise_generator(x*30, y*30, z*30, 3) } smooth scale < 100, 1, 100> translate < -50, -1.4, -50 >  
